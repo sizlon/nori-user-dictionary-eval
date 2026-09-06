@@ -1,0 +1,44 @@
+{
+    "base": {
+        "mappings": {
+            "properties": {
+                "agency": {
+                    "type": "keyword"
+                },
+                "date": {
+                    "type": "keyword"
+                },
+                "div": {
+                    "type": "keyword"
+                },
+                "title": {
+                    "type": "text",
+                    "analyzer": "ko"
+                }
+            }
+        },
+        "settings": {
+            "index": {
+                "analysis": {
+                    "analyzer": {
+                        "ko": {
+                            "filter": [
+                                "nori_readingform",
+                                "lowercase",
+                                "nori_part_of_speech"
+                            ],
+                            "type": "custom",
+                            "tokenizer": "ko_tok"
+                        }
+                    },
+                    "tokenizer": {
+                        "ko_tok": {
+                            "type": "nori_tokenizer",
+                            "decompound_mode": "discard"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
