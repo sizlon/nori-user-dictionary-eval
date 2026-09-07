@@ -114,6 +114,18 @@ decompound 모드만 바꾸는 것은 아무 효과가 없었습니다. 사전�
 
 [검색 품질 진단](https://sizlon.io/services/search/)은 이 절차를 고객의 코퍼스와 실패 질의에 그대로 적용하는 2주짜리 작업입니다.
 
+## 동의어 (2026-09-07 추가)
+
+같은 사전 위에 표기·약어 짝 20개를 검색 분석기에만 `synonym_graph` 로 붙였다(`make_syn_index.py`). 정답은 어느 표기든 포함하면 인정(`eval_syn.py` 의 expanded). 그 짝이 든 질의 24개:
+
+| 설정 | P@10 | R@50 | MRR |
+|---|---|---|---|
+| 사전 2,163, 동의어 없음(`tuned4`) | 0.750 | 0.586 | 0.878 |
+| 사전 2,155 + 동의어 25(`syn`) | 0.767 | 0.926 | 0.923 |
+| 사전 2,163 + 동의어 26(`syn3`) | **0.921** | **0.955** | **1.000** |
+
+대조군 10개는 상위 50 이 동일. 색인 분석기(mixed) 뒤에 붙이면 ES 가 규칙을 거부하고 `lenient` 는 조용히 버린다(`probe_syn_placement.py`). 여러 토큰으로 쪼개지는 동의어 표기(웹사이트·무인비행장치 등 8개)는 구문 질의가 되어 원표기 문서를 밀어내므로 **사전에 먼저 넣는다** — 그 8개가 `user_rules4.json` 의 +8 이다. 의미만 가까운 짝(유지보수↔유지관리)은 R@50 이득 0. 재현: `python3 make_indices.py --only tuned4 && python3 make_syn_index.py --name syn && python3 make_syn_index.py --name syn3 --rules user_rules4.json && python3 eval_syn.py tuned4 syn syn3`.
+
 ## 파일
 
 | 파일 | 내용 |
@@ -124,6 +136,7 @@ decompound 모드만 바꾸는 것은 아무 효과가 없었습니다. 사전�
 | `queries.json` | 질의 50개(lossy / inconsistent / control) |
 | `user_rules2.json` | 사용자 사전 2,155항(자동 2,147 + 수동 19) — 실험에 쓴 판 |
 | `results.json` · `index-settings/` | 결과와 인덱스 설정 원문 |
+| `synonyms.json` · `queries_syn.json` · `make_syn_index.py` · `probe_syn_placement.py` · `eval_syn.py` · `user_rules4.json` · `results_syn.json` | 동의어 실험(2026-09-07) — 아래 절 |
 
 코드는 MIT. 코퍼스는 조달청 공공데이터개방표준서비스(낙찰정보) 공개 데이터에서 만든 공고명·기관명이며 응찰 정보는 없습니다.
 

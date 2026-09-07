@@ -41,6 +41,7 @@ This is a measurement snapshot (September 2026), published as used. It is not ma
 | `dict_candidates.json` · `seg_inconsistency.json` · `word_freq.json` | diagnostics output |
 | `results.json` | metrics for 4 configurations × 50 queries × 2 rules |
 | `index-settings/*.json` | the exact analysis settings and mappings of each index, as dumped from the cluster |
+| `synonyms.json` · `queries_syn.json` · `make_syn_index.py` · `probe_syn_placement.py` · `eval_syn.py` · `user_rules4.json` · `results_syn.json` | synonym experiment (2026-09-07), see the section below; `make_indices.py --only tuned4` builds its control index |
 
 ## Run it (about 10 minutes)
 
@@ -102,6 +103,18 @@ curl -s localhost:9201/tuned2s/_analyze -H 'content-type: application/json' -d '
 - Automatic relevance misses paraphrases and counts accidental substring hits.
 - No synonyms (RFP ↔ 제안요청서 and the like) — that is the next experiment.
 - A random 100-query set would move less than this golden set; the control group shows the lower bound.
+
+## Synonyms (added 2026-09-07)
+
+Twenty spelling/acronym pairs (`synonyms.json`) on a `synonym_graph` filter in the **search** analyzer only, on top of the same dictionary (`make_syn_index.py`). A document counts as relevant if it contains any spelling (`eval_syn.py`, "expanded"). On the 24 queries that contain such a pair:
+
+| Setup | P@10 | R@50 | MRR |
+|---|---|---|---|
+| dictionary 2,163, no synonyms (`tuned4`) | 0.750 | 0.586 | 0.878 |
+| dictionary 2,155 + 25 synonyms (`syn`) | 0.767 | 0.926 | 0.923 |
+| dictionary 2,163 + 26 synonyms (`syn3`) | **0.921** | **0.955** | **1.000** |
+
+Ten control queries: identical top 50 in every setup. Behind the index analyzer (decompound mixed) Elasticsearch rejects the rules; `lenient` drops them silently (`probe_syn_placement.py`). A synonym spelling that splits into several tokens becomes a phrase query and pushes the original-spelling documents out, so those spellings go into the user dictionary first — that is the +8 in `user_rules4.json`. Pairs that are merely close in meaning gained nothing at R@50. Reproduce: `python3 make_indices.py --only tuned4 && python3 make_syn_index.py --name syn && python3 make_syn_index.py --name syn3 --rules user_rules4.json && python3 eval_syn.py tuned4 syn syn3`.
 
 ## Data and license
 

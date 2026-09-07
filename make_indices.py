@@ -1,4 +1,4 @@
-"""인덱스 4벌을 만든다: base(discard) · mixed · tuned2(사전, 색인=검색) · tuned2s(사전, 색인 mixed·검색 none).
+"""인덱스 4벌(+동의어 실험 대조군 tuned4)을 만든다: base(discard) · mixed · tuned2(사전, 색인=검색) · tuned2s(사전, 색인 mixed·검색 none).
 사용: python3 make_indices.py [--prefix m_] [--rules user_rules2.json] [--only base,mixed,...]
 같은 이름의 인덱스는 지우고 다시 만든다(결정적이라 결과는 같다). 보존본을 건드리기 싫으면 --prefix.
 """
@@ -18,7 +18,8 @@ if __name__ == '__main__':
     a = ap.parse_args()
     rules = json.load(open(a.rules, encoding='utf8')) if any(x.startswith('tuned') for x in a.only.split(',')) else None
     bodies = {'base': lambda: analyzer_settings('discard'), 'mixed': lambda: analyzer_settings('mixed'),
-              'tuned2': lambda: analyzer_settings('mixed', user_rules=rules), 'tuned2s': lambda: tuned2s_body(rules)}
+              'tuned2': lambda: analyzer_settings('mixed', user_rules=rules), 'tuned2s': lambda: tuned2s_body(rules),
+              'tuned4': lambda: tuned2s_body(json.load(open('user_rules4.json', encoding='utf8')))}  # 동의어 실험 대조군: 사전 +8(user_rules4), 동의어 없음
     for name in a.only.split(','):
         full = a.prefix + name
         create(full, bodies[name]()); t = time.time(); n = bulk(full)
