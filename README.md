@@ -45,7 +45,7 @@ This is a measurement snapshot (September 2026), published as used. It is not ma
 
 ## Run it (about 10 minutes)
 
-Requirements: Docker, Python 3 with `requests`.
+Requirements: Docker, Python 3 with `requests` (`pip install -r requirements.txt`).
 
 ```bash
 docker build -t es-nori:9.5.2 .

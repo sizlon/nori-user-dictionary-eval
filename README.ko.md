@@ -9,6 +9,7 @@ Elasticsearch 한국어 분석기 Nori 가 기본 설정에서 도메인 문서�
 ```bash
 docker build -t es-nori:9.5.2 .
 docker run -d --name es-nori -p 127.0.0.1:9201:9200 -e discovery.type=single-node -e xpack.security.enabled=false -e xpack.ml.enabled=false -e ES_JAVA_OPTS="-Xms2g -Xmx2g" es-nori:9.5.2
+pip install -r requirements.txt
 python3 make_indices.py --only base
 python3 diagnose.py --index base          # 약 3분
 python3 build_rules.py
